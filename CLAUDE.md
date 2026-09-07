@@ -33,12 +33,12 @@ wysłaną po fakcie i u nikogo się nie pojawiło — trzeba było wydać 0.31.3
 
 ## Zadanie w TMS po scaleniu
 
-Każde wydanie dostaje zadanie w projekcie „TMS ✅", pula „🤖 SKILL-Claude", nazwane
-`Wtyczka Claude'a X.Y.Z — <co się zmieniło>`. Opis prozą, bez nazw plików; link do
-PR-a w opisie albo w materiałach.
+**Samo wydanie zadania nie potrzebuje.** Nie zakładaj osobnego zadania tylko po to,
+żeby odnotować, że coś wyszło — od tego jest wydanie na GitHubie.
 
-Jedno wydanie = jedno zadanie. Gdy dwa PR-y wyjdą pod tym samym numerem, podbij
-drugi, zamiast wpisywać oba do jednego zadania.
+Gdy robota miała już swoje zadanie (bo ktoś ją zgłosił albo zaplanował), prowadzisz
+je do końca: materiały do weryfikacji z linkiem do PR-a i tym, co sprawdzić, a potem
+status. Nie dublujesz go drugim zadaniem „o wydaniu".
 
 ## Czego nie robisz
 
