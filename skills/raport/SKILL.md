@@ -51,8 +51,8 @@ Jedno zapytanie na cały okres:
 
 ```bash
 curl -s -H "Authorization: Bearer $KLUCZ" --get \
-  --data-urlencode "doneFrom=2026-08-31T00:00:00+02:00" \
-  --data-urlencode "doneTo=2026-08-31T23:59:59+02:00" \
+  --data-urlencode "doneFrom=2026-08-31" \
+  --data-urlencode "doneTo=2026-08-31" \
   --data-urlencode "personId=7" \
   --data-urlencode "limit=300" \
   "$BASE/api/v1/integrations/tasks"
@@ -66,10 +66,14 @@ jej materiałów do weryfikacji gołym tekstem albo `null`, oraz `reworked`.
 
 ### Okres
 
-**Granice doby liczysz sam, w czasie warszawskim, i wysyłasz pełne znaczniki ISO
-z przesunięciem.** Sama data (`2026-08-31`) zostanie odrzucona — serwer nie zgaduje,
-w jakiej strefie siedzi człowiek. Latem przesunięcie to `+02:00`, zimą `+01:00`.
-Nie wysyłaj `Z`: robota oddana wieczorem wpadłaby wtedy do jutra.
+**Wysyłasz samą datę (`2026-08-31`) — końce doby dopowiada serwer**, w strefie
+firmowej, którą podaje słownik (`timezone`). Nie licz przesunięcia sam i nie
+doklejaj godziny: zegar twojej maszyny to strefa człowieka, nie firmy, więc
+komuś pracującemu spoza Polski wyciąłbyś inny dzień niż reszcie.
+
+Pełny znacznik ISO z przesunięciem serwer nadal przyjmuje, ale nie masz po co go
+składać. „Dziś" bierzesz z daty lokalnej człowieka — na pytanie, gdzie kończy
+się ta doba, odpowiada już TMS.
 
 Domyślnie „dziś". Poza tym rozumiesz to, co ludzie mówią: „wczoraj", „od
 poniedziałku" (od poniedziałku bieżącego tygodnia do teraz), „od 25 sierpnia",
@@ -224,8 +228,8 @@ wygląda jak rozliczenie.
 
 Przy okresie dłuższym niż dzień powiedz w pierwszym zdaniu, jaki zakres wziąłeś —
 „od poniedziałku" bywa nie tym poniedziałkiem, o którym myślał pytający. Dzień czytasz
-z `doneAt` po warszawsku, tak samo jak liczyłeś granice okresu — inaczej wieczorna
-robota wyląduje w dniu następnym. Dni dziel tylko wtedy, gdy to coś zmienia;
+z `doneAt` w strefie firmowej ze słownika, nie w swojej — inaczej wieczorna robota
+wyląduje w dniu następnym. Dni dziel tylko wtedy, gdy to coś zmienia;
 zwykle lepiej czyta się okres opisany jako całość.
 
 ### Kilka osób
