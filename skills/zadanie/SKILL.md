@@ -1053,6 +1053,39 @@ Odmowy:
 - `409 no_blocker` przy zdejmowaniu — na tym punkcie nic nie wisi.
 
 
+## Historia zmian statusu
+
+Status mówi, gdzie zadanie stoi **teraz**. Kto je tam postawił, kiedy i ile razy
+wracało — mówi historia:
+
+```bash
+curl -s -H "Authorization: Bearer $KLUCZ" "$BASE/api/v1/integrations/tasks/1721/work-history"
+```
+
+Wraca `entries`, od najstarszego wpisu: `at`, `from` i `to` (klucze statusów) razem
+z `fromLabel` i `toLabel`, oraz `by` — imię osoby, która przestawiła. Pusta lista
+znaczy, że zadania nikt jeszcze nie ruszył; to nie błąd. Etykiety cytuj te, które
+przyszły — tak samo jak przy `statusLabel` w reszcie odczytów.
+
+Kiedy po to sięgasz:
+- **„na czym stanęliśmy", „ile razy to wracało", „kto to odstawił"** — jedno
+  zadanie, nie tablica.
+- **Zadanie wróciło „Do poprawy"** — sama liczba nawrotów mówi tyle, co treść
+  uwag: pierwszy raz to normalna tura, trzeci to znak, że coś się nie dogaduje.
+  Uwagi czytasz osobno (patrz „Odczyt materiałów i uwag do poprawy").
+- **Bierzesz się za cudze zadanie** i chcesz wiedzieć, czy ktoś już przy nim był.
+
+Na „czemu to stoi" odpowiadasz **jednym i drugim**: blokady mówią, na co zadanie
+czeka, a historia — kto i kiedy je zatrzymał. Zadanie na „Czeka" bez blokad
+odstawił człowiek, i to jego imię widać właśnie tutaj.
+
+Streszczaj, nie przepisuj wierszy. „Wojtek oddał 4 września, wróciło do poprawy
+tego samego dnia, od tamtej pory stoi" mówi więcej niż pięć linijek z datami.
+
+Odmowy: `404` — zadania nie ma albo jest poza zasięgiem właściciela klucza.
+Historię widzi każdy, kto widzi zadanie, więc odmowa znaczy, że zadania nie widać
+w ogóle — nie że sama historia jest zamknięta.
+
 ## Zmiana statusu
 
 Statusy w TMS: `not_started` (Nierozpoczęty), `in_progress` (W trakcie),
