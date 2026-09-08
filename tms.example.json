@@ -12,10 +12,15 @@
   // false — zakłada tylko wtedy, gdy wyraźnie poprosisz
   "propose": true,
 
-  // CO wpisywać w zadaniach. Prozą, własnymi słowami. Przykłady:
+  // Twoje stałe ustalenia: CO wpisywać w zadaniach i JAK ma się zachowywać
+  // asystent. Prozą, własnymi słowami. Przykłady:
   //   "Domyślny projekt: WMS. Zadania dla siebie chyba że mówię inaczej."
   //   "Robota w kodzie idzie do puli Fixy. Bez terminu = średni priorytet."
   //   "Nie proponuj zadań z rozmów, w których tylko planujemy."
+  //   "Jako kierownik projektu zamykam swoje zadania sam, bez pytania
+  //    o weryfikację."
+  // Powiedziane w rozmowie („od teraz zamykaj moje zadania bez pytania")
+  // asystent zaproponuje dopisać tutaj — i dopisze, gdy się zgodzisz.
   "rules": "",
 
   // JAK mają brzmieć. Dotyczy stylu, nie treści. Przykłady:

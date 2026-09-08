@@ -361,15 +361,23 @@ Plik wygląda tak — każde pole ma nad sobą wyjaśnienie i przykłady:
   // true — Claude sam proponuje zadanie po skończonej robocie
   "propose": true,
 
-  // CO wpisywać: domyślny projekt, kogo ustawiać wykonawcą, czego nie proponować
-  "rules": "Domyślny projekt: WMS. Zadania dla siebie chyba że mówię inaczej.",
+  // CO wpisywać i JAK się zachowywać: domyślny projekt, kogo ustawiać wykonawcą,
+  // czego nie proponować, czy pytać o oddanie do weryfikacji
+  "rules": "Domyślny projekt: WMS. Jako kierownik zamykam swoje zadania sam.",
 
   // JAK to ma brzmieć: długość opisu, ton, czy używać wyliczeń
   "style": "Krótko, bez ozdobników. Opis maksymalnie trzy zdania."
 }
 ```
 
-`rules` mówi **co** wpisać, `style` **jak** to napisać. Oba można zostawić puste.
+`rules` mówi **co** wpisać i **jak się zachować**, `style` — **jak to napisać**.
+Oba można zostawić puste.
+
+**Reguł nie musisz wpisywać ręcznie.** Gdy w rozmowie padnie stałe ustalenie —
+„od teraz zamykaj moje zadania bez pytania", „zadania z tego repo idą do WMS" —
+wtyczka pokaże Ci, co chce dopisać, i dopisze to do `rules`, jeśli się zgodzisz.
+Od następnej rozmowy pyta o to mniej. Cofnąć da się tam samo: `/tms:ustawienia`
+pokazuje reguły i mówi, gdzie leży plik.
 
 **Klucz nigdy nie trafia do repo.** Leży tylko u Ciebie i jest Twoją tożsamością —
 zadania zakładają się pod Twoim nazwiskiem. Wtyczka nie wypisuje go w rozmowie,
