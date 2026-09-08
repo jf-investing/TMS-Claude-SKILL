@@ -5,13 +5,17 @@ description: Ustawienia wtyczki TMS — gdzie leży plik konfiguracyjny i co mo�
 
 # Ustawienia wtyczki TMS
 
-Konfigurację trzyma plik `tms.json` w katalogu `.claude` w profilu użytkownika.
-Ten skill mówi, gdzie on leży, co ma w środku i co da się zmienić. **Edytuje go
+Konfigurację trzyma jeden plik JSON. Szukasz go w trzech miejscach, po kolei,
+i bierzesz pierwsze, które istnieje: ścieżka ze zmiennej `TMS_CONFIG`, potem
+`~/.tms/config.json`, a na końcu `~/.claude/tms.json` — tam, gdzie plik leży
+u wszystkich, którzy zaczynali od wtyczki do Claude'a.
+
+Ten skill mówi, co jest w tym pliku i co da się w nim zmienić. **Edytuje go
 człowiek, nie Ty** — Twoja rola to pokazać stan i ścieżkę.
 
 ## Wersja
 
-**Ta instrukcja pochodzi z wydania 0.37.0.** Numer jest wpisany w tym pliku, więc
+**Ta instrukcja pochodzi z wydania 0.38.0.** Numer jest wpisany w tym pliku, więc
 zawsze mówi prawdę o tym, co jest w tej chwili wczytane — nie o tym, co leży
 w repozytorium czy w katalogu wtyczek.
 
@@ -21,12 +25,20 @@ Przy pokazywaniu ustawień wypisz go i sprawdź, czy nie ma nowszego wydania:
 curl -s --max-time 10 https://api.github.com/repos/jf-investing/TMS-Claude-SKILL/releases/latest
 ```
 
-Interesuje Cię `tag_name` (np. `v0.37.0`). Porównaj z numerem wyżej:
-- **te same** → dopisz `Wersja: 0.37.0 (najnowsza)`.
-- **wydanie nowsze** → dopisz `Wersja: 0.37.0 — jest już 0.37.1` i powiedz, jak
-  zaktualizować: w zarządzaniu wtyczkami odświeżyć źródło, potem **zamknąć
-  i otworzyć edytor** i zacząć nową rozmowę. Sam nowy numer w oknie wtyczek nie
-  wystarczy — dopóki tu widnieje stary, wczytana jest stara instrukcja.
+Interesuje Cię `tag_name` (np. `v0.38.0`). Porównaj z numerem wyżej:
+- **te same** → dopisz `Wersja: 0.38.0 (najnowsza)`.
+- **wydanie nowsze** → dopisz `Wersja: 0.38.0 — jest już 0.38.1` i powiedz, jak
+  zaktualizować. **Jak — zależy od tego, skąd wtyczka pochodzi:**
+  - **z marketplace'u** (Claude Code) → w zarządzaniu wtyczkami odświeżyć źródło,
+    potem **zamknąć i otworzyć edytor** i zacząć nową rozmowę. Sam nowy numer
+    w oknie wtyczek nie wystarczy — dopóki tu widnieje stary, wczytana jest stara
+    instrukcja.
+  - **ze sklonowanego repo** (każde inne narzędzie) → `git pull` w katalogu
+    repozytorium i nowa rozmowa. Nie ma tu ani cache'u wtyczek, ani automatycznej
+    aktualizacji, więc nic się nie odświeży samo.
+
+  Nie wiesz, skąd pochodzi? Powie to ścieżka do tego pliku: `plugins/cache`
+  w środku znaczy marketplace, cokolwiek innego — klon.
 - **zapytanie nie wyszło** (brak sieci, limit GitHuba) → wypisz sam numer, bez
   zgadywania. To nie jest błąd wart tłumaczenia.
 
@@ -35,8 +47,9 @@ Interesuje Cię `tag_name` (np. `v0.37.0`). Porównaj z numerem wyżej:
 Sprawdź, czy plik jest, i odczytaj z niego **pola po jednym — nigdy całość**:
 
 ```bash
-ls ~/.claude/tms.json
-grep -v '^[[:space:]]*//' ~/.claude/tms.json | grep -v '"apiKey"'
+CFG=$(for p in "$TMS_CONFIG" ~/.tms/config.json ~/.claude/tms.json; do [ -f "$p" ] && echo "$p" && break; done)
+echo "${CFG:-brak pliku}"
+grep -v '^[[:space:]]*//' "$CFG" | grep -v '"apiKey"'
 ```
 
 Druga komenda pokazuje wszystko poza kluczem: `baseUrl`, `propose`, `rules`,
@@ -44,7 +57,8 @@ Druga komenda pokazuje wszystko poza kluczem: `baseUrl`, `propose`, `rules`,
 znaków klucza — i tylko tyle:
 
 ```bash
-grep -o '"apiKey"[[:space:]]*:[[:space:]]*"[^"]*"' ~/.claude/tms.json \
+CFG=$(for p in "$TMS_CONFIG" ~/.tms/config.json ~/.claude/tms.json; do [ -f "$p" ] && echo "$p" && break; done)
+grep -o '"apiKey"[[:space:]]*:[[:space:]]*"[^"]*"' "$CFG" \
   | sed 's/.*: *"//; s/"$//' | sed -n 's/.*\(.\{4\}\)$/…\1/p'
 ```
 
@@ -70,15 +84,15 @@ Pokaż stan w takim bloku, a pod nim pełną ścieżkę:
 ```
 Ustawienia TMS
 
-Wersja:     0.37.0 (najnowsza)
-Adres:      https://tms.example.pl
+Wersja:     0.38.0 (najnowsza)
+Adres:      https://tms.firma.pl
 Klucz:      ustawiony (…3k7f)
 Propozycje: włączone
 Reguły:     Domyślny projekt: TMS. Zadania dla siebie chyba że mówię inaczej.
 Styl:       —
 Projekty:   2 katalogi (Desktop\OMS → OMS 🚚, Desktop\WMS → WMS)
 
-Plik: C:\Users\<nazwa>\.claude\tms.json
+Plik: C:\Users\<nazwa>\.tms\config.json
 W środku są opisy wszystkich pól i przykłady.
 ```
 
@@ -88,9 +102,10 @@ Przy `projectByFolder` wypisz liczbę katalogów i same pary, po ludzku — peł
 **Klucza nigdy nie wypisujesz w całości** — tylko cztery ostatnie znaki, żeby dało
 się rozpoznać, który to. Brak klucza → `Klucz: brak`. Puste pole → myślnik.
 
-Podaj ścieżkę w postaci właściwej dla systemu: na Windowsie z ukośnikami wstecznymi
-i pełnym profilem, gdzie indziej `~/.claude/tms.json`. Dopisz, czym otworzyć —
-`notepad "$env:USERPROFILE\.claude\tms.json"` na Windowsie.
+Ścieżkę bierzesz z `echo "$CFG"` wyżej — to jest to miejsce, z którego naprawdę
+czytasz, a nie to, które wypada domyślnie. Podaj ją w postaci właściwej dla
+systemu: na Windowsie z ukośnikami wstecznymi i pełnym profilem. Dopisz, czym
+otworzyć — `notepad "$env:USERPROFILE\.tms\config.json"` na Windowsie.
 
 Gdy człowiek prosi o zmianę ustawienia, powiedz **które pole** w pliku odpowiada za
 to, o co pyta, i jakie wartości przyjmuje. Nie edytuj pliku sam — chyba że poprosi
@@ -103,8 +118,11 @@ Utwórz go z szablonu — z komentarzami, pustymi wartościami do uzupełnienia:
 ```bash
 node -e '
 const fs=require("fs"), os=require("os"), path=require("path");
-const p=path.join(os.homedir(),".claude","tms.json");
-if (fs.existsSync(p)) { console.log("plik już jest:", p); process.exit(0) }
+const kand=[process.env.TMS_CONFIG, path.join(os.homedir(),".tms","config.json"),
+            path.join(os.homedir(),".claude","tms.json")];
+const jest=kand.find(x=>x && fs.existsSync(x));
+if (jest) { console.log("plik już jest:", jest); process.exit(0) }
+const p=kand[1]; fs.mkdirSync(path.dirname(p), {recursive:true});
 fs.writeFileSync(p, `{
   // Adres firmowego TMS, bez ukośnika na końcu.
   // Weź go z paska przeglądarki, np. "https://tms.firma.pl".
@@ -115,7 +133,7 @@ fs.writeFileSync(p, `{
   // pod Twoim nazwiskiem. Nie wysyłaj go nikomu.
   "apiKey": "",
 
-  // true  — po skończonej robocie Claude sam proponuje zadanie do TMS
+  // true  — po skończonej robocie asystent sam proponuje zadanie do TMS
   // false — zakłada tylko wtedy, gdy wyraźnie poprosisz
   "propose": true,
 
@@ -156,9 +174,10 @@ Na koniec sprawdź, czy działa. Klucz i adres bierzesz do zmiennych — w jedne
 komendzie z `curl`em, żeby nic nie wyszło na ekran:
 
 ```bash
-KLUCZ=$(grep -v '^[[:space:]]*//' ~/.claude/tms.json \
+CFG=$(for p in "$TMS_CONFIG" ~/.tms/config.json ~/.claude/tms.json; do [ -f "$p" ] && echo "$p" && break; done)
+KLUCZ=$(grep -v '^[[:space:]]*//' "$CFG" \
   | grep -o '"apiKey"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/.*: *"//; s/"$//')
-BASE=$(grep -v '^[[:space:]]*//' ~/.claude/tms.json \
+BASE=$(grep -v '^[[:space:]]*//' "$CFG" \
   | grep -o '"baseUrl"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/.*: *"//; s/"$//')
 curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $KLUCZ" \
   "$BASE/api/v1/integrations/dictionary"

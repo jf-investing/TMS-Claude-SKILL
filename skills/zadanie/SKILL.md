@@ -10,11 +10,11 @@ Zadanie idzie na produkcję pod nazwiskiem właściciela klucza.
 
 ## Ustawienia
 
-Wszystko siedzi w `~/.claude/tms.json` — poza tym repo, klucz nigdy do gita:
+Wszystko siedzi w jednym pliku JSON — poza tym repo, klucz nigdy do gita:
 
 ```json
 {
-  "baseUrl": "https://tms.example.pl",
+  "baseUrl": "https://tms.firma.pl",
   "apiKey": "tms_...",
   "propose": true,
   "rules": "Domyślny projekt: TMS. Zadania dla siebie chyba że mówię inaczej.",
@@ -22,6 +22,17 @@ Wszystko siedzi w `~/.claude/tms.json` — poza tym repo, klucz nigdy do gita:
   "projectByFolder": { "C:\\Users\\jan\\Desktop\\OMS": "OMS 🚚" }
 }
 ```
+
+Plik szukasz w trzech miejscach, po kolei, i bierzesz pierwsze, które istnieje:
+
+1. ścieżka ze zmiennej `TMS_CONFIG`, gdy jest ustawiona,
+2. `~/.tms/config.json` — miejsce niezwiązane z żadnym narzędziem,
+3. `~/.claude/tms.json` — tam, gdzie plik leży u wszystkich, którzy zaczynali od
+   wtyczki do Claude'a.
+
+Trzecie miejsce zostaje na stałe: **nikt nie musi nic przenosić.** Nowe instalacje
+zakładaj w drugim — to samo repo podpina się dziś także pod inne narzędzia (patrz
+`AGENTS.md` w korzeniu), a katalog `.claude` jest wtedy mylący.
 
 Brak pliku albo brak `apiKey` → powiedz, że skill nie jest skonfigurowany, i odeślij
 do `/tms:ustawienia`. Ta sama komenda ustawienia pokazuje i objaśnia. Gdyby przyszło
@@ -43,16 +54,17 @@ zasięgu. Katalog spoza mapy: ustalasz projekt jak dotąd.
 
 **Klucza nie wypisujesz — nigdzie.** Wszystko, co wyjdzie z komendy, zostaje
 w transkrypcie rozmowy: pliku na dysku, który po sesji nie znika i którego nikt nie
-czyści. `cat ~/.claude/tms.json` jest wyciekiem, choćby blok pokazany potem
+czyści. `cat` na tym pliku jest wyciekiem, choćby blok pokazany potem
 człowiekowi maskował klucz do czterech znaków — maskowanie dotyczy wyświetlenia,
 nie odczytu.
 
 Klucz bierzesz do zmiennej, w tej samej komendzie co wywołanie. Nic nie drukuje:
 
 ```bash
-KLUCZ=$(grep -v '^[[:space:]]*//' ~/.claude/tms.json \
+CFG=$(for p in "$TMS_CONFIG" ~/.tms/config.json ~/.claude/tms.json; do [ -f "$p" ] && echo "$p" && break; done)
+KLUCZ=$(grep -v '^[[:space:]]*//' "$CFG" \
   | grep -o '"apiKey"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/.*: *"//; s/"$//')
-BASE=$(grep -v '^[[:space:]]*//' ~/.claude/tms.json \
+BASE=$(grep -v '^[[:space:]]*//' "$CFG" \
   | grep -o '"baseUrl"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/.*: *"//; s/"$//')
 curl -s -H "Authorization: Bearer $KLUCZ" "$BASE/api/v1/integrations/dictionary"
 ```
@@ -60,7 +72,10 @@ curl -s -H "Authorization: Bearer $KLUCZ" "$BASE/api/v1/integrations/dictionary"
 W PowerShellu to samo, też bez drukowania:
 
 ```powershell
-$cfg   = Get-Content "$env:USERPROFILE\.claude\tms.json" -Raw
+$CFG   = @($env:TMS_CONFIG, "$env:USERPROFILE\.tms\config.json",
+           "$env:USERPROFILE\.claude\tms.json") |
+         Where-Object { $_ -and (Test-Path $_) } | Select-Object -First 1
+$cfg   = Get-Content $CFG -Raw
 $KLUCZ = [regex]::Match($cfg, '"apiKey"\s*:\s*"([^"]*)"').Groups[1].Value
 $BASE  = [regex]::Match($cfg, '"baseUrl"\s*:\s*"([^"]*)"').Groups[1].Value
 ```
@@ -72,7 +87,8 @@ Resztę pól — `propose`, `rules`, `style`, `projectByFolder` — wolno pokaza
 czytasz je bez linii z kluczem:
 
 ```bash
-grep -v '^[[:space:]]*//' ~/.claude/tms.json | grep -v '"apiKey"'
+CFG=$(for p in "$TMS_CONFIG" ~/.tms/config.json ~/.claude/tms.json; do [ -f "$p" ] && echo "$p" && break; done)
+grep -v '^[[:space:]]*//' "$CFG" | grep -v '"apiKey"'
 ```
 
 Plik zapisany w jednej linii → ta komenda nie pokaże nic. Wtedy bierzesz pola
@@ -145,9 +161,23 @@ i bez czekania, aż ktoś poprosi.
 
 Adres składasz z `baseUrl`: `$BASE/tasks/<numer>`.
 
+**Hosta nie bierzesz z pamięci ani z przykładów w tym pliku.** Gdy `baseUrl` poszedł
+wyłącznie jako zmienna powłoki — a tak właśnie ma iść, bo tą samą komendą leci klucz —
+to nigdy nie trafił do Twojego kontekstu. Działający `curl` **nie jest** dowodem, że go
+znasz: host siedzi tam w zmiennej, której nie widzisz. Zanim podasz pierwszy link
+w rozmowie, wypisz samo to pole (wolno, to nie klucz):
+
+```bash
+CFG=$(for p in "$TMS_CONFIG" ~/.tms/config.json ~/.claude/tms.json; do [ -f "$p" ] && echo "$p" && break; done)
+grep -v '^[[:space:]]*//' "$CFG" | grep -o '"baseUrl"[[:space:]]*:[[:space:]]*"[^"]*"'
+```
+
+Zmyślony host wygląda tak samo wiarygodnie jak prawdziwy — nikt go nie łapie na oko,
+wychodzi dopiero wtedy, gdy człowiek kliknie.
+
 ```
 Zadanie #1814 czeka na Wojtka jako „Do weryfikacji"
-https://tms.example.pl/tasks/1814
+https://tms.firma.pl/tasks/1814
 ```
 
 Sam numer zmusza człowieka do szukania zadania po numerku — a to jest dokładnie ta
@@ -458,11 +488,16 @@ Opis istniejącego zadania poprawiasz **tylko na wyraźną prośbę** („popraw
 1766", „sformatuj to zadanie") — nigdy z własnej inicjatywy, bo to cudza treść.
 
 ```bash
+cat > opis.json << 'JSON'
+{"html":"<p>Nowa treść opisu.</p>"}
+JSON
 curl -s -w '\n%{http_code}' -X POST \
   -H "Authorization: Bearer $KLUCZ" -H "Content-Type: application/json" \
   --data-binary @opis.json \
   "$BASE/api/v1/integrations/tasks/1766/description"
 ```
+
+W pliku jeden klucz: **`html`** — nie `description`, to odbija się `400`.
 
 Zapis nadpisuje cały opis, więc **najpierw go przeczytaj** — zadanie wraca
 z wyszukiwania bez treści opisu, więc poproś człowieka o wklejenie jej albo
@@ -1324,7 +1359,7 @@ wyjście to zamknięcie:
 
 ```
 Zadanie 1721 założone, materiały wpisane.
-https://tms.example.pl/tasks/1721
+https://tms.firma.pl/tasks/1721
 
 Zamknąć? [zakończone / jeszcze nie]
 ```
@@ -1361,7 +1396,7 @@ człowiek widzi z całej roboty, i często jedyna, do której wraca:
 
 ```
 Zadanie #1814 czeka na Wojtka jako „Do weryfikacji"
-https://tms.example.pl/tasks/1814
+https://tms.firma.pl/tasks/1814
 ```
 
 ## Zadanie z pull requesta

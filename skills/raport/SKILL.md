@@ -10,7 +10,8 @@ z TMS — raport ma odbijać stan systemu, a nie go upiększać.
 
 ## Ustawienia
 
-Te same co przy zadaniach: `~/.claude/tms.json`, a w przykładach niżej `$KLUCZ` to
+Te same co przy zadaniach — plik szukany po kolei w `$TMS_CONFIG`,
+`~/.tms/config.json` i `~/.claude/tms.json`. W przykładach niżej `$KLUCZ` to
 `apiKey`, `$BASE` to `baseUrl`. Brak pliku albo brak klucza → powiedz, że skill nie
 jest skonfigurowany, i odeślij do `/tms:ustawienia`.
 
@@ -19,9 +20,10 @@ ani podanie go parserowi JSON-a; dlaczego i co zamiast tego, mówi skill `zadani
 sekcja „Odczyt ustawień". Stamtąd te dwie linijki:
 
 ```bash
-KLUCZ=$(grep -v '^[[:space:]]*//' ~/.claude/tms.json \
+CFG=$(for p in "$TMS_CONFIG" ~/.tms/config.json ~/.claude/tms.json; do [ -f "$p" ] && echo "$p" && break; done)
+KLUCZ=$(grep -v '^[[:space:]]*//' "$CFG" \
   | grep -o '"apiKey"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/.*: *"//; s/"$//')
-BASE=$(grep -v '^[[:space:]]*//' ~/.claude/tms.json \
+BASE=$(grep -v '^[[:space:]]*//' "$CFG" \
   | grep -o '"baseUrl"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/.*: *"//; s/"$//')
 ```
 
