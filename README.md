@@ -337,8 +337,9 @@ rozmowę.
 
 ### 4. Ustawienia
 
-Wszystko siedzi w jednym pliku: `%USERPROFILE%\.claude\tms.json` (na Macu i Linuksie
-`~/.claude/tms.json`). Nie ma go jeszcze? Napisz w rozmowie:
+Wszystko siedzi w jednym pliku. Nowe instalacje zakładaj w `~/.tms/config.json`
+(na Windowsie `%USERPROFILE%\.tms\config.json`); stary `~/.claude/tms.json` działa
+dalej i nie trzeba go ruszać. Nie ma go jeszcze? Napisz w rozmowie:
 
 ```
 /tms:ustawienia
@@ -384,6 +385,47 @@ podmień go w `tms.json`, a stary odwołaj.
 Nowa rozmowa, polecenie `/tms:ustawienia` — powinno pokazać komplet ustawień
 bez ostrzeżeń. Potem „załóż w TMS zadanie na próbę": powinien pokazać blok
 do zatwierdzenia, a po `tak` — numer i link.
+
+## Inne narzędzia niż Claude
+
+Treść instrukcji nie jest Claude'owa — to zwykłe pliki `SKILL.md` w katalogu
+`skills/`, a w nich polska proza i wywołania `curl`. Claude'owe jest samo
+opakowanie: marketplace, `/plugin install` i komenda `/tms:ustawienia`. Tam, gdzie
+tego nie ma, podpina się to ręcznie i działa tak samo.
+
+**Raz, w dowolnym stałym miejscu:**
+
+```bash
+git clone https://github.com/jf-investing/TMS-Claude-SKILL.git ~/.tms/skill
+```
+
+**Potem jedna linijka w globalnych instrukcjach Twojego narzędzia** — w pliku, który
+czyta ono przy każdej rozmowie (`~/.codex/AGENTS.md`, `~/.gemini/GEMINI.md` i tak
+dalej; nazwa zależy od narzędzia):
+
+```
+Robota w TMS: przeczytaj ~/.tms/skill/AGENTS.md i trzymaj się tego, co tam stoi.
+```
+
+`AGENTS.md` w korzeniu repozytorium jest drogowskazem: mówi, który plik z `skills/`
+otworzyć przy jakiej rozmowie, i powtarza trzy zasady, które muszą obowiązywać,
+zanim cokolwiek się otworzy — obchodzenie się z kluczem, polska treść przez plik
+i link przy numerze zadania. Narzędzia, które same wykrywają skille po
+frontmatterze (Claude Code, Copilot CLI), znajdą je również bez tej linijki.
+
+**Konfiguracja** to ten sam plik co u Claude'a, szukany po kolei w trzech miejscach:
+
+1. ścieżka ze zmiennej `TMS_CONFIG`, gdy jest ustawiona,
+2. `~/.tms/config.json` — zalecane dla nowych instalacji,
+3. `~/.claude/tms.json` — zostaje na stałe, nikt nie musi nic przenosić.
+
+**Aktualizacja:** `git pull` w katalogu klonu. Nie ma tu ani cache'u wtyczek, ani
+automatycznego odświeżania, więc bez tego nic się nie zmieni.
+
+Czego poza Claude'em nie ma: komendy `/tms:ustawienia` — ale sam skill ustawień
+działa, wystarczy poprosić o ustawienia zwykłym zdaniem — oraz automatycznych
+aktualizacji. Zadania założone z innych narzędzi mają w TMS tę samą ikonkę
+Claude'a; to świadome uproszczenie, nie przeoczenie.
 
 ## Która wersja jest wczytana
 

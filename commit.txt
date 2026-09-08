@@ -1,0 +1,23 @@
+feat: uniwersalna nakładka dla narzędzi innych niż Claude (0.38.0)
+
+Treść skilli była już przenośna — Claude'owe zostało samo opakowanie.
+Dokładam AGENTS.md jako drogowskaz i odklejam ścieżkę konfiguracji.
+
+- AGENTS.md w korzeniu: tablica rozpoznań (co pada w rozmowie → który
+  SKILL.md otworzyć) plus trzy zasady, które łamie się pierwszym ruchem,
+  zanim jakikolwiek skill zdąży ostrzec: klucz, polska treść przez plik,
+  link przy numerze zadania. Drogowskaz, nie kopia.
+- Konfiguracja szukana po kolei: $TMS_CONFIG → ~/.tms/config.json →
+  ~/.claude/tms.json. Ostatnie miejsce zostaje na stałe, nikt nie musi
+  nic przenosić. Sprawdzone w bashu i w PowerShellu.
+- Sekcja „Wersja" rozgałęziona: marketplace kontra sklonowane repo.
+  Dotychczasowa instrukcja aktualizacji poza Claude'em była nieprawdziwa.
+- README: jak podpiąć to w narzędziu bez systemu wtyczek.
+
+Poza zakresem zadania, przy okazji:
+- „Poprawa opisu" nie mówiła, że pole nazywa się `html`; strzał
+  w `description` odbija się 400. Wyszło przy pisaniu opisu do #2062.
+- Sekcja o linku ostrzega teraz, że hosta nie bierze się z pamięci ani
+  z przykładów — działający curl nie jest dowodem, że się go zna.
+- Przykładowy host ujednolicony na tms.firma.pl (był tms.example.pl,
+  wyglądał jak prawdziwy adres).
