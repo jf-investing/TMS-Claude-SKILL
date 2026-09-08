@@ -254,10 +254,12 @@ Odmowy:
 
 Zanim pokażesz propozycję, sprawdź, czy tego samego już ktoś nie zgłosił:
 
-Szukane słowa dobieraj **bez ogonków**, jak niżej — wpisane w argument komendy
-rozsypałyby się po drodze (patrz „Ścieżki plików" i akapit o tekście w adresie),
-a szukanie zwróciłoby pusto i wyglądałoby to na brak duplikatu. Trzon słowa wystarczy:
-„termin" znajdzie i „terminy", i „terminów".
+Ogonki w szukanej frazie nie mają znaczenia — serwer zdejmuje je po obu stronach,
+więc „zwrotow" znajdzie „zwrotów" i odwrotnie. Pisz ją więc **bez ogonków**, jak niżej:
+polski tekst wpisany w argument komendy potrafi się po drodze rozsypać (patrz „Ścieżki
+plików" i akapit o tekście w adresie), a tutaj nic przez to nie tracisz. Trzon słowa
+wystarczy: „termin" znajdzie i „terminy", i „terminów" — ale nie odwrotnie, bo odmiany
+serwer nie rozwija.
 
 ```bash
 curl -s -H "Authorization: Bearer $KLUCZ" \
