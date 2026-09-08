@@ -43,6 +43,12 @@ prośbę. `rules` to prywatne ustalenia tej osoby — trzymaj się ich, chyba ż
 w rozmowie padło co innego. `style` dotyczy brzmienia: długości opisu, tonu, tego
 czy używać wyliczeń. Reguły mówią CO wpisać, styl JAK to napisać.
 
+**Reguły mówią też, jak masz się zachować** — nie tylko co wpisać w pola zadania.
+„Jako kierownik zamykam swoje zadania sam" jest regułą dokładnie tak samo jak
+„domyślny projekt: WMS". Gdy reguła odpowiada na pytanie, które i tak byś zadał,
+**tego pytania nie zadajesz** — robisz po jej myśli i mówisz, którą zastosowałeś.
+Skąd się te reguły biorą, mówi sekcja niżej.
+
 `projectByFolder` to mapa katalog na dysku → projekt w TMS. Gdy rozmowa toczy się
 w takim katalogu albo gdziekolwiek pod nim, podstaw ten projekt do propozycji
 zamiast pytać. Pasuje kilka ścieżek → wygrywa najdłuższa (najbardziej szczegółowa).
@@ -108,6 +114,88 @@ nie dowie.
 
 Nie pytaj o klucz w rozmowie. W przykładach niżej `$KLUCZ` to `apiKey`, a `$BASE` to
 `baseUrl` — podstawione tak, jak wyżej.
+
+## Reguły z rozmowy
+
+Człowiek raz na jakiś czas mówi coś, co nie dotyczy tej jednej roboty, tylko
+**każdej następnej**: „skoro jestem kierownikiem projektu, moje zadania zamykaj od
+razu", „zadania z tego repozytorium zakładaj w projekcie WMS", „nie pytaj mnie
+o priorytet, domyślnie średni". To jest reguła, nie polecenie na teraz.
+
+**Powiedziana w rozmowie ginie razem z rozmową.** Następna sesja startuje z pustą
+głową i pyta o to samo, co poprzednia — a człowiek widzi wtyczkę, która go nie
+słucha. Dlatego regułę usłyszaną w rozmowie **proponujesz zapisać** do `rules`.
+
+Poznajesz ją po tym, że mówi o zasadzie, a nie o tym jednym zadaniu: pada „od
+teraz", „zawsze", „domyślnie", „nie pytaj mnie o", „skoro jestem…", albo człowiek
+drugi raz z rzędu poprawia Cię w tę samą stronę. Jednorazowe „tym razem zamknij"
+regułą nie jest.
+
+Pytasz krótko, cytując to, co dopiszesz — **dosłownie tak, jak trafi do pliku**:
+
+```
+Zapisać to na stałe?
+  „Jako kierownik projektu zamykam swoje zadania sam, bez pytania o weryfikację."
+[zapisz / nie]
+```
+
+Dopiero po zgodzie dopisujesz. Reguła idzie **na koniec** dotychczasowych, jednym
+zdaniem, w pierwszej osobie — tak, jak człowiek napisałby to sam. Treść reguły
+**wysyłasz plikiem** — to polski tekst, więc obowiązuje ta sama zasada co przy
+zadaniach (patrz „Treść ZAWSZE z pliku"). Skryptu też nie wklejasz w `node -e`:
+
+```bash
+cat > regula.txt << 'TEKST'
+Jako kierownik projektu zamykam swoje zadania sam, bez pytania o weryfikację.
+TEKST
+
+cat > dopisz-regule.js << 'SKRYPT'
+const fs=require("fs"), os=require("os"), path=require("path");
+const UKOSNIK=String.fromCharCode(92);
+const p=[process.env.TMS_CONFIG, path.join(os.homedir(),".tms","config.json"),
+         path.join(os.homedir(),".claude","tms.json")].find(x=>x && fs.existsSync(x));
+if(!p){ console.log("brak pliku konfiguracyjnego"); process.exit(1) }
+const t=fs.readFileSync(p,"utf8");
+const i=t.indexOf('"rules"');
+if(i<0){ console.log("brak pola rules"); process.exit(1) }
+const a=t.indexOf('"', t.indexOf(":", i)+1);
+let b=a+1; while(t[b]!=='"'){ if(t[b]===UKOSNIK) b++; b++ }
+const stare=t.slice(a+1,b);
+const nowa=fs.readFileSync("regula.txt","utf8").trim()
+  .split(UKOSNIK).join(UKOSNIK+UKOSNIK).split('"').join(UKOSNIK+'"');
+fs.writeFileSync(p, t.slice(0,a+1)+(stare?stare+" ":"")+nowa+t.slice(b), "utf8");
+console.log("dopisane do:", p);
+SKRYPT
+
+node dopisz-regule.js
+```
+
+Ruszasz **wyłącznie to jedno pole**, reszta pliku zostaje bajt w bajt — razem
+z komentarzami `//`, które ktoś czyta, gdy zagląda tam ręcznie.
+
+**Odwrotnego ukośnika nie wpisujesz w skrypcie wprost** — stąd `UKOSNIK`. Zmierzone
+2026-09-08: ten sam skrypt wklejony w komendę stracił po drodze połowę ukośników
+i wyrażenie regularne przestało się kompilować. Powłoka, narzędzie, warstwa po
+drodze — każda z nich potrafi je zjeść, a `String.fromCharCode(92)` przechodzi
+wszędzie bez zmian.
+
+**Skrypt nie drukuje z pliku niczego poza ścieżką i to jest celowe.** W tym samym
+pliku leży klucz, a wypisany raz zostaje w zapisie rozmowy na zawsze. Z tego samego
+powodu nie podajesz pliku `JSON.parse`'owi ani `jq`: przy byle błędzie składni
+parser przedrukowuje całe wejście w treści błędu, razem z kluczem (patrz „Odczyt
+ustawień").
+
+`brak pola rules` znaczy plik starszy niż to pole — powiedz to i odeślij do
+`/tms:ustawienia`, tam jest szablon z kompletem pól. Nie dopisuj pola sam.
+
+Po zapisie jedno zdanie: co zapisane i że da się to zmienić w `/tms:ustawienia`.
+Poprawiasz i kasujesz reguły tak samo — na prośbę, pokazując wcześniej nową treść
+całego pola.
+
+**Czego nie zapisujesz:** rzeczy rzuconych w złości albo w pośpiechu („dobra,
+zamykaj wszystko"), ustaleń dotyczących jednego zadania, i niczego, czego człowiek
+nie potwierdził. Reguła zapisana po cichu jest gorsza niż jej brak — działa
+miesiącami, a nikt nie pamięta, skąd się wzięła.
 
 ## Treść ZAWSZE z pliku
 
@@ -1165,7 +1253,21 @@ Co z czym:
     `to_verify` i powiedz, na kogo. Flagi tu nie obchodzisz i nie próbujesz
     „na wszelki wypadek".
 
-  **Czekaj na „tak"**, dopiero potem wysyłaj.
+  **Reguła w `rules`, która wybiera któreś z tych wyjść, znosi pytanie.** „Jako
+  kierownik zamykam swoje zadania sam" decyduje już za człowieka — wysyłasz od razu
+  i mówisz jednym zdaniem, co się stało i **z czego to wyszło**:
+
+  ```
+  Zamknięte — zgodnie z Twoją regułą „jako kierownik zamykam swoje zadania sam".
+  Zmienisz ją w /tms:ustawienia.
+  https://tms.firma.pl/tasks/1721
+  ```
+
+  Reguła musi trafiać w to konkretne rozwidlenie i w tę rolę — „zamykam swoje
+  zadania" nie mówi nic o zadaniu cudzym ani o tym, komu je oddać. **Nie
+  naciągasz**: reguła połowiczna albo nie o tym → pytasz normalnie.
+
+  Bez takiej reguły **czekaj na „tak"**, dopiero potem wysyłaj.
 
   **Why:** `canSelfComplete` liczy się z samej obecności recenzenta i nie patrzy,
   kim wykonawca jest w projekcie. Zmierzone 2026-09-03: zadanie z `canSelfComplete`
@@ -1388,6 +1490,10 @@ bo zamknięcie własnego zadania stoi przed nim otworem mimo tej flagi:
 Zamknąć czy oddać Danielowi do sprawdzenia?
 [zakończone / do weryfikacji / jeszcze nie]
 ```
+
+Reguła w `rules`, która wybiera za człowieka któreś z tych wyjść, znosi pytanie —
+wysyłasz od razu i mówisz, z której reguły to wyszło (patrz „Zmiana statusu").
+Dotyczy wyboru drogi, nie samego zapisu materiałów: te wpisujesz tak czy owak.
 
 `jeszcze nie` → zostaje `in_progress`, temat zamknięty.
 

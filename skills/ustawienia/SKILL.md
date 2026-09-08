@@ -10,12 +10,16 @@ i bierzesz pierwsze, które istnieje: ścieżka ze zmiennej `TMS_CONFIG`, potem
 `~/.tms/config.json`, a na końcu `~/.claude/tms.json` — tam, gdzie plik leży
 u wszystkich, którzy zaczynali od wtyczki do Claude'a.
 
-Ten skill mówi, co jest w tym pliku i co da się w nim zmienić. **Edytuje go
-człowiek, nie Ty** — Twoja rola to pokazać stan i ścieżkę.
+Ten skill mówi, co jest w tym pliku i co da się w nim zmienić. Co do zasady
+**edytuje go człowiek** — Twoja rola to pokazać stan i ścieżkę. Jeden wyjątek to
+`rules`: reguły dopisujesz na prośbę, a nawet proponujesz z własnej inicjatywy, gdy
+w rozmowie padnie stałe ustalenie („od teraz zamykaj moje zadania bez pytania").
+Zawsze pokazując wcześniej treść i czekając na zgodę. Jak — patrz „Reguły
+z rozmowy" w `/tms:zadanie`.
 
 ## Wersja
 
-**Ta instrukcja pochodzi z wydania 0.38.0.** Numer jest wpisany w tym pliku, więc
+**Ta instrukcja pochodzi z wydania 0.39.0.** Numer jest wpisany w tym pliku, więc
 zawsze mówi prawdę o tym, co jest w tej chwili wczytane — nie o tym, co leży
 w repozytorium czy w katalogu wtyczek.
 
@@ -25,9 +29,9 @@ Przy pokazywaniu ustawień wypisz go i sprawdź, czy nie ma nowszego wydania:
 curl -s --max-time 10 https://api.github.com/repos/jf-investing/TMS-Claude-SKILL/releases/latest
 ```
 
-Interesuje Cię `tag_name` (np. `v0.38.0`). Porównaj z numerem wyżej:
-- **te same** → dopisz `Wersja: 0.38.0 (najnowsza)`.
-- **wydanie nowsze** → dopisz `Wersja: 0.38.0 — jest już 0.38.1` i powiedz, jak
+Interesuje Cię `tag_name` (np. `v0.39.0`). Porównaj z numerem wyżej:
+- **te same** → dopisz `Wersja: 0.39.0 (najnowsza)`.
+- **wydanie nowsze** → dopisz `Wersja: 0.39.0 — jest już 0.39.1` i powiedz, jak
   zaktualizować. **Jak — zależy od tego, skąd wtyczka pochodzi:**
   - **z marketplace'u** (Claude Code) → w zarządzaniu wtyczkami odświeżyć źródło,
     potem **zamknąć i otworzyć edytor** i zacząć nową rozmowę. Sam nowy numer
@@ -84,7 +88,7 @@ Pokaż stan w takim bloku, a pod nim pełną ścieżkę:
 ```
 Ustawienia TMS
 
-Wersja:     0.38.0 (najnowsza)
+Wersja:     0.39.0 (najnowsza)
 Adres:      https://tms.firma.pl
 Klucz:      ustawiony (…3k7f)
 Propozycje: włączone
@@ -110,6 +114,10 @@ otworzyć — `notepad "$env:USERPROFILE\.tms\config.json"` na Windowsie.
 Gdy człowiek prosi o zmianę ustawienia, powiedz **które pole** w pliku odpowiada za
 to, o co pyta, i jakie wartości przyjmuje. Nie edytuj pliku sam — chyba że poprosi
 wprost („zmień mi to"), wtedy zmień **tylko** wskazane pole i zachowaj komentarze.
+
+Samo `rules` ma osobną drogę: reguły dopisuje, poprawia i kasuje `/tms:zadanie` —
+tam jest gotowa komenda, która rusza wyłącznie to pole i nie drukuje z pliku
+niczego poza ścieżką. Nie pisz do tego pola po swojemu.
 
 ## Gdy pliku nie ma
 
@@ -137,10 +145,15 @@ fs.writeFileSync(p, `{
   // false — zakłada tylko wtedy, gdy wyraźnie poprosisz
   "propose": true,
 
-  // CO wpisywać w zadaniach. Prozą, własnymi słowami. Przykłady:
+  // Twoje stałe ustalenia: CO wpisywać w zadaniach i JAK ma się zachowywać
+  // asystent. Prozą, własnymi słowami. Przykłady:
   //   "Domyślny projekt: WMS. Zadania dla siebie chyba że mówię inaczej."
   //   "Robota w kodzie idzie do puli Fixy. Bez terminu = średni priorytet."
   //   "Nie proponuj zadań z rozmów, w których tylko planujemy."
+  //   "Jako kierownik projektu zamykam swoje zadania sam, bez pytania
+  //    o weryfikację."
+  // Powiedziane w rozmowie („od teraz zamykaj moje zadania bez pytania")
+  // asystent zaproponuje dopisać tutaj — i dopisze, gdy się zgodzisz.
   "rules": "",
 
   // JAK mają brzmieć. Dotyczy stylu, nie treści. Przykłady:
