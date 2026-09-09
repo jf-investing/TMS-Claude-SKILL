@@ -525,8 +525,8 @@ Czytaj z niej dwie rzeczy, zanim cokolwiek zameldujesz:
 
 - **jak zapisał się tytuł** — `task.title` to jedyne miejsce, w którym sprawdzisz,
   czy ogonki doszły całe (patrz „Treść ZAWSZE z pliku"),
-- **`reviewers` i `canSelfComplete`** — potrzebne później do pytania o oddanie.
-  **Nie dopytuj o nie osobnym odczytem**, skoro właśnie przyszły.
+- **`reviewers`** — potrzebni później do pytania o oddanie. **Nie dopytuj o nich
+  osobnym odczytem**, skoro właśnie przyszli.
 
 Zgłoś numer i link `$BASE/tasks/123` — jednym zdaniem, żeby dało się od razu
 zajrzeć i poprawić na miejscu.
@@ -1217,6 +1217,13 @@ Statusy w TMS: `not_started` (Nierozpoczęty), `in_progress` (W trakcie),
 `waiting` (Czeka), `to_verify` (Do weryfikacji), `completed` (Zakończone),
 `rework_needed` (Do poprawy).
 
+**Zadanie idzie stałą ścieżką i wtyczka jej nie skraca.** Z nierozpoczętego
+prowadzi jedno wyjście: start. Z „W trakcie" trzy — odstawić na „Czeka", oddać
+do weryfikacji, gdy zadanie ma recenzenta, albo zakończyć, gdy go nie ma.
+Z „Czeka" wraca się wznowieniem, nie ustawieniem statusu ręcznie. Przejścia spoza
+tej ścieżki nie proponuj i startu nie omijaj — nierozpoczętego TMS nie odda ani
+nie zamknie.
+
 Najpierw ustal, o które zadanie chodzi. Numer podany wprost → pobierz je po
 `taskId`. Opis słowny („to o filtrach") → poszukaj przez `query` jak przy
 duplikatach. Kilka trafień — pokaż listę i zapytaj. Zero trafień — powiedz to,
@@ -1241,21 +1248,18 @@ Co z czym:
   Zadanie z puli (bez wykonawcy) start bierze na właściciela klucza — tak jak
   „Weź" w oknie zadania. Powiedz to jednym zdaniem: wzięte i w toku. Zadania,
   które ma już wykonawcę, start nie przejmuje.
-- „zrobione", „skończone" → `canSelfComplete` mówi tylko, czy zadanie ma nad sobą
-  recenzenta — **nie to, czy serwer pozwoli je zamknąć**. `true` → proponuj
-  `completed`. Przy `false` decyduje rola właściciela klucza w tym projekcie
-  (`myRole` ze słownika):
-  - **kierownik albo właściciel projektu** → obie drogi stoją otworem. Pokaż je
-    jednym pytaniem, z imieniem recenzenta: `[zakończone / do weryfikacji]`.
-    Kierownik zamykający własne zadanie nie ma po co chodzić po zgodę do drugiego
-    kierownika, a wtyczka nie jest od pilnowania tego za TMS.
-  - **uczestnik** → zadanie faktycznie czeka na czyjąś weryfikację; proponuj
-    `to_verify` i powiedz, na kogo. Flagi tu nie obchodzisz i nie próbujesz
-    „na wszelki wypadek".
+- „zrobione", „skończone" → **decyduje `reviewers`, imiennie.** Lista pusta →
+  nikt tego nie sprawdza, więc proponuj `completed`. Ktoś na niej jest → jedyne
+  wyjście to `to_verify`, i mówisz na kogo: „pójdzie do Wojtka", nie „pójdzie do
+  weryfikacji". Rola właściciela klucza w projekcie tego nie zmienia — kierownik
+  ze swoim recenzentem oddaje tak samo jak każdy inny.
 
-  **Reguła w `rules`, która wybiera któreś z tych wyjść, znosi pytanie.** „Jako
-  kierownik zamykam swoje zadania sam" decyduje już za człowieka — wysyłasz od razu
-  i mówisz jednym zdaniem, co się stało i **z czego to wyszło**:
+  `canSelfComplete` liczy się z samej obecności recenzenta, więc mówi to samo, ale
+  bez imienia. Patrz na `reviewers`.
+
+  **Reguła w `rules`, która wybiera inaczej, znosi ten wybór.** „Jako kierownik
+  zamykam swoje zadania sam" decyduje już za człowieka — wysyłasz od razu i mówisz
+  jednym zdaniem, co się stało i **z czego to wyszło**:
 
   ```
   Zamknięte — zgodnie z Twoją regułą „jako kierownik zamykam swoje zadania sam".
@@ -1263,17 +1267,11 @@ Co z czym:
   https://tms.firma.pl/tasks/1721
   ```
 
-  Reguła musi trafiać w to konkretne rozwidlenie i w tę rolę — „zamykam swoje
-  zadania" nie mówi nic o zadaniu cudzym ani o tym, komu je oddać. **Nie
-  naciągasz**: reguła połowiczna albo nie o tym → pytasz normalnie.
+  Reguła musi trafiać w to konkretne rozwidlenie — „zamykam swoje zadania" nie mówi
+  nic o zadaniu cudzym ani o tym, komu je oddać. **Nie naciągasz**: reguła
+  połowiczna albo nie o tym → trzymasz się ścieżki.
 
   Bez takiej reguły **czekaj na „tak"**, dopiero potem wysyłaj.
-
-  **Why:** `canSelfComplete` liczy się z samej obecności recenzenta i nie patrzy,
-  kim wykonawca jest w projekcie. Zmierzone 2026-09-03: zadanie z `canSelfComplete`
-  na `false` i recenzentem, którego wykonawca jest kierownikiem tego samego
-  projektu, serwer zamyka bez mrugnięcia — `200`, `status: completed`. Wtyczka
-  czytała tę flagę jak zakaz i odsyłała kierownika po zgodę do drugiego kierownika.
 - „to stoi", „czekam na Wojtka", „odstawiam to na potem" → `waiting`. Bez pytania
   o zgodę, to odwracalne. Powiedz, że zadanie odstawione i **na co czeka** —
   sam status tego nie niesie, a bez tego nikt nie wie, kiedy je wznowić.
@@ -1403,24 +1401,21 @@ resztę pisz po ludzku.
 
 Po zapisie pokaż krótko, co wpisałeś, i link do zadania.
 
-**Zanim zapytasz o oddanie, musisz mieć `canSelfComplete` i `reviewers`.** Gdy
-zadanie założyłeś przed chwilą, **oba przyszły w odpowiedzi na założenie** — użyj
-ich i nie pytaj serwera drugi raz o to samo. Odczytu potrzebujesz tylko wtedy, gdy
-zadanie jest cudze albo starsze niż ta rozmowa:
+**Zanim zapytasz o oddanie, musisz mieć `reviewers`.** Gdy zadanie założyłeś przed
+chwilą, **przyszły w odpowiedzi na założenie** — użyj ich i nie pytaj serwera drugi
+raz o to samo. Odczytu potrzebujesz tylko wtedy, gdy zadanie jest cudze albo
+starsze niż ta rozmowa:
 
 ```bash
 curl -s -H "Authorization: Bearer $KLUCZ" "$BASE/api/v1/integrations/tasks?taskId=1721"
 ```
 
-Bez tych dwóch pól nie wiesz, czy zadanie ma w ogóle kogoś, kto je sprawdzi. `reviewers`
+Bez tego pola nie wiesz, czy zadanie ma w ogóle kogoś, kto je sprawdzi. `reviewers`
 mówi to imiennie — **i tak właśnie o tym mów**: „pójdzie do Wojtka", nie „pójdzie
 do weryfikacji". Zadanie własne z pustą listą recenzentów oddane „do weryfikacji"
 ląduje na liście recenzji u tego, kto je zlecił — czyli u autora roboty. Kierownik
 projektu tej listy nie widzi, więc zadanie utyka tam, gdzie nikt go nie szuka.
 Zamiast oddawać w próżnię, zaproponuj wskazanie recenzenta (patrz „Recenzenci").
-
-Samo zadanie nie mówi, kim jesteś w jego projekcie — **rolę bierzesz z `myRole`
-w słowniku** i bez niej nie ułożysz pytania o oddanie (patrz „Zmiana statusu").
 
 Osobno, na prośbę („dopisz materiały do 1654"): znajdź zadanie jak przy zmianie
 statusu i zapisz. Działa na każdym zadaniu, w którym właściciel klucza jest
@@ -1453,11 +1448,10 @@ Odmowy:
 
 ### Oddanie po materiałach
 
-Tu się zatrzymujesz i pytasz. Wyjście podpowiadają `canSelfComplete` i `reviewers`
-odczytane przed chwilą — nie zgaduj ich i nie pytaj z góry o weryfikację.
+Tu się zatrzymujesz i pytasz. Wyjście podpowiada `reviewers` odczytane przed
+chwilą — nie zgaduj go i nie pytaj z góry o weryfikację.
 
-`true` z pustymi `reviewers` — nikt tego nie sprawdza, więc jedyne sensowne
-wyjście to zamknięcie:
+Lista pusta — nikt tego nie sprawdza, więc jedyne sensowne wyjście to zamknięcie:
 
 ```
 Zadanie 1721 założone, materiały wpisane.
@@ -1466,32 +1460,16 @@ https://tms.firma.pl/tasks/1721
 Zamknąć? [zakończone / jeszcze nie]
 ```
 
-`true`, ale recenzenci są — obie drogi stoją otworem, więc pokaż obie jednym
-pytaniem, z imieniem:
+Recenzent jest — droga prowadzi do niego, więc nazwij go po imieniu:
 
 ```
-Zamknąć czy oddać Danielowi do sprawdzenia?
-[zakończone / do weryfikacji / jeszcze nie]
+Zadanie 1721 założone, materiały wpisane.
+https://tms.firma.pl/tasks/1721
+
+Oddać Danielowi? [do weryfikacji / jeszcze nie]
 ```
 
-`false` — zadanie ma nad sobą recenzenta. Co z tym zrobić, zależy od roli
-właściciela klucza w projekcie (`myRole` ze słownika).
-
-**Uczestnik** — weryfikacja to jedyna droga, więc nazwij człowieka po imieniu:
-
-```
-Oddać Wojtkowi? [do weryfikacji / jeszcze nie]
-```
-
-**Kierownik albo właściciel projektu** — pytasz tak jak przy `true` z recenzentami,
-bo zamknięcie własnego zadania stoi przed nim otworem mimo tej flagi:
-
-```
-Zamknąć czy oddać Danielowi do sprawdzenia?
-[zakończone / do weryfikacji / jeszcze nie]
-```
-
-Reguła w `rules`, która wybiera za człowieka któreś z tych wyjść, znosi pytanie —
+Reguła w `rules`, która wybiera za człowieka co innego, znosi to pytanie —
 wysyłasz od razu i mówisz, z której reguły to wyszło (patrz „Zmiana statusu").
 Dotyczy wyboru drogi, nie samego zapisu materiałów: te wpisujesz tak czy owak.
 
