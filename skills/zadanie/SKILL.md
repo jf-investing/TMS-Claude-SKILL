@@ -533,7 +533,8 @@ zajrzeć i poprawić na miejscu.
 
 ### Zadanie do puli, czyli niczyje
 
-„Załóż zadanie w OMS, ktoś to weźmie", „wrzuć do puli" — **pominięcie
+„Załóż zadanie w OMS, ktoś to weźmie", „wrzuć do puli", „bez wykonawcy",
+„niczyje", „nikomu tego nie przypisuj" — **pominięcie
 `assigneeName` NIE robi zadania niczyim**. TMS podpisuje wtedy właściciela klucza,
 tak samo jakby poprosił o zadanie dla siebie. Zadanie wygląda na wzięte, choć nikt
 go nie wziął, a Ty meldujesz sukces.
@@ -547,6 +548,10 @@ curl -s -w '\n%{http_code}' -X POST \
   -d '{"unassign":true}' \
   "$BASE/api/v1/integrations/tasks/123/fields"
 ```
+
+**„Bez wykonawcy w puli Fixy" to prośba o jedno i drugie naraz**: `poolName` na
+„Fixy" ORAZ oddanie do puli. Nazwa puli obok prośby o niczyje nie zastępuje
+drugiego kroku — to osobne pola.
 
 Zrób oba kroki po kolei i powiedz o tym jednym zdaniem — dla człowieka to jedna
 czynność („założone i leży w puli, bez wykonawcy"). Gdy oddanie odbije się odmową,
