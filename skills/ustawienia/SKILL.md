@@ -19,7 +19,7 @@ z rozmowy" w `/tms:zadanie`.
 
 ## Wersja
 
-**Ta instrukcja pochodzi z wydania 0.40.0.** Numer jest wpisany w tym pliku, więc
+**Ta instrukcja pochodzi z wydania 0.40.1.** Numer jest wpisany w tym pliku, więc
 zawsze mówi prawdę o tym, co jest w tej chwili wczytane — nie o tym, co leży
 w repozytorium czy w katalogu wtyczek.
 
@@ -29,9 +29,9 @@ Przy pokazywaniu ustawień wypisz go i sprawdź, czy nie ma nowszego wydania:
 curl -s --max-time 10 https://api.github.com/repos/jf-investing/TMS-Claude-SKILL/releases/latest
 ```
 
-Interesuje Cię `tag_name` (np. `v0.40.0`). Porównaj z numerem wyżej:
-- **te same** → dopisz `Wersja: 0.40.0 (najnowsza)`.
-- **wydanie nowsze** → dopisz `Wersja: 0.40.0 — jest już 0.40.1` i powiedz, jak
+Interesuje Cię `tag_name` (np. `v0.40.1`). Porównaj z numerem wyżej:
+- **te same** → dopisz `Wersja: 0.40.1 (najnowsza)`.
+- **wydanie nowsze** → dopisz `Wersja: 0.40.1 — jest już 0.40.1` i powiedz, jak
   zaktualizować. **Jak — zależy od tego, skąd wtyczka pochodzi:**
   - **z marketplace'u** (Claude Code) → w zarządzaniu wtyczkami odświeżyć źródło,
     potem **zamknąć i otworzyć edytor** i zacząć nową rozmowę. Sam nowy numer
@@ -88,7 +88,7 @@ Pokaż stan w takim bloku, a pod nim pełną ścieżkę:
 ```
 Ustawienia TMS
 
-Wersja:     0.40.0 (najnowsza)
+Wersja:     0.40.1 (najnowsza)
 Adres:      https://tms.firma.pl
 Klucz:      ustawiony (…3k7f)
 Propozycje: włączone
