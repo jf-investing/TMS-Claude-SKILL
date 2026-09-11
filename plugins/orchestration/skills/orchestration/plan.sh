@@ -16,7 +16,7 @@ OBJ=""; PASS=""; TPL=""
 while [ $# -gt 0 ]; do case $1 in
   --objective) OBJ=$2; shift 2;;
   --template) TPL=$2; shift 2;;
-  --agent|--model|--effort|--worktree|--timeout-ms|--pool) PASS="$PASS $1 $2"; shift 2;;
+  --agent|--model|--effort|--worktree|--timeout-ms|--pool|--name) PASS="$PASS $1 $2"; shift 2;;
   *) shift;; esac; done
 [ -z "$OBJ" ] && { echo "plan.sh: --objective is required" >&2; exit 2; }
 

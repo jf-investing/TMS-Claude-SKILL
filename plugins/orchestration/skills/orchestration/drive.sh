@@ -18,27 +18,61 @@
 #
 # Exit 0  = every task succeeded.        Exit 10 = question/escalation (only it is printed).
 # Exit 20 = finished, some tasks FAILED. Exit 30 = stalled (worker did work, never reported).
+# Exit 40 = no worker could be started at all; the reason is printed verbatim.
 set -u
 O="${ORCA_CLI_COMMAND:-orca}"
-AGENT=claude; WT=new-child; TMO=900000; MODEL=""; EFFORT=""; POOL=0
+AGENT=claude; WT=auto; WTNAME=""; TMO=900000; MODEL=""; EFFORT=""; POOL=0
 while [ $# -gt 0 ]; do case $1 in
   --agent) AGENT=$2; shift 2;; --worktree) WT=$2; shift 2;; --timeout-ms) TMO=$2; shift 2;;
   --model) MODEL=$2; shift 2;; --effort) EFFORT=$2; shift 2;; --pool) POOL=$2; shift 2;;
+  --name) WTNAME=$2; shift 2;;
   *) shift;; esac; done
 MFLAG=""; [ -n "$MODEL" ] && MFLAG="--model $MODEL"; [ -n "$EFFORT" ] && MFLAG="$MFLAG --effort $EFFORT"
+WTSEL=""; badstart=0
 started=0; reused=0; released=0; retained=0; STALLS=0; FP=""; INFLIGHT=0
 DONE=$(mktemp); trap 'rm -f "$DONE"' EXIT
 
 ready_tasks(){ $O orchestration task-list --ready --brief 2>/dev/null | grep -oE '^task_[0-9a-f]+'; }
-# INFLIGHT is authoritative: task-list lags a freshly dispatched task by a beat
-fresh(){ $O orchestration worker-start --task "$1" --worktree "$WT" --agent "$AGENT" $MFLAG >/dev/null 2>&1 \
-         && { started=$((started+1)); INFLIGHT=$((INFLIGHT+1)); }; }
+# INFLIGHT is authoritative: task-list lags a freshly dispatched task by a beat.
+#
+# WORKTREE IS PROBED, NOT ASSUMED. Orca refuses "new-child" in two different ways
+# depending on the workspace ("New worktrees require --name", "Folder <x> cannot create
+# orchestration worktrees"), and the old code hid both behind 2>/dev/null — so nothing
+# launched, nothing was said, and the DAG sat silent until the 2x--timeout-ms stall
+# fired half an hour later, pointing at an empty [dispatched] list. Now the first task
+# tries each candidate, the winner is remembered in WTSEL for the rest of the run, and
+# a genuine refusal is printed and aborts immediately. Nobody types a flag.
+fresh(){
+  t=$1; err=""
+  if [ -n "$WTSEL" ]; then cands=$WTSEL
+  elif [ "$WT" = auto ]; then cands="new-child current"
+  else cands=$WT; fi
+  for sel in $cands; do
+    nm=""
+    case $sel in new-child|new-top-level) nm="--name ${WTNAME:-dag-${t#task_}}";; esac
+    err=$($O orchestration worker-start --task "$t" --worktree "$sel" $nm --agent "$AGENT" $MFLAG 2>&1)
+    if printf '%s' "$err" | grep -q '\[ready\]'; then
+      [ -z "$WTSEL" ] && [ "$WT" = auto ] && [ "$sel" != "new-child" ] \
+        && echo "worktree: '$sel' (new-child odrzucony przez ten workspace)"
+      WTSEL=$sel; started=$((started+1)); INFLIGHT=$((INFLIGHT+1)); return 0
+    fi
+  done
+  echo "WORKER START REFUSED — $t"
+  printf '%s\n' "$err" | head -2 | sed 's/^/  /'
+  badstart=$((badstart+1)); return 1
+}
 
 start_ready(){
   for t in $(ready_tasks); do
     if [ "$POOL" -gt 0 ] && [ "$INFLIGHT" -ge "$POOL" ]; then break; fi
-    fresh "$t"
+    fresh "$t" || true
   done
+  # Nothing running and nothing startable is not something to wait 30 minutes for.
+  if [ "$INFLIGHT" -eq 0 ] && [ "$badstart" -gt 0 ]; then
+    echo "DAG ABORTED: zaden worker nie wystartowal — $(summary)"
+    echo "  popraw przyczyne wyzej; zadania czekaja w [ready], nic nie przepadlo"
+    exit 40
+  fi
 }
 
 settle(){                            # release settled workers: succeeded AND failed alike

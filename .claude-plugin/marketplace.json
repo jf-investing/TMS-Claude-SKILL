@@ -14,7 +14,7 @@
     {
       "name": "orchestration",
       "description": "Nadzorowana praca wielu agentów Orca — pętlę DAG-u prowadzi skrypt, nie kontekst modelu",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "source": "./plugins/orchestration"
     }
   ]

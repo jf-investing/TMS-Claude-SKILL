@@ -54,4 +54,17 @@ a "refused reuse falls back to fresh"     "$(grep -q 'REUSE REFUSED' "$HERE"/dri
 a "plan.sh forwards --pool"               "$(grep -q 'timeout-ms|--pool' "$HERE"/plan.sh && echo 1 || echo 0)"
 a "plan.sh supports --template"           "$(grep -q '\-\-template) TPL=' "$HERE"/plan.sh && echo 1 || echo 0)"
 a "template braces are escaped for bash"  "$(grep -qF 'TPL//\{\}/' "$HERE"/plan.sh && echo 1 || echo 0)"
+
+# Worktree probing. These guard the 1.0.1 regression: worker-start was called with a
+# hardcoded --worktree and its stderr thrown away, so a refusal launched nothing and
+# said nothing for 2x--timeout-ms. NOTE: this file is read-only by design and never
+# starts a worker, so it CANNOT catch a fresh refusal from a future Orca — only a
+# smoke run can. What it does catch is someone reintroducing the silence.
+a "driver probes the worktree, never assumes" "$(grep -q 'cands="new-child current"' "$HERE"/drive.sh && echo 1 || echo 0)"
+a "driver names new worktrees (--name)"       "$(grep -qF 'nm="--name ${WTNAME:-dag-' "$HERE"/drive.sh && echo 1 || echo 0)"
+a "worker-start stderr is captured, not sunk" "$(grep -q 'err=\$(\$O orchestration worker-start' "$HERE"/drive.sh && echo 1 || echo 0)"
+a "refused start is printed verbatim"         "$(grep -q 'WORKER START REFUSED' "$HERE"/drive.sh && echo 1 || echo 0)"
+a "no-worker DAG aborts fast (exit 40)"       "$(grep -q 'exit 40' "$HERE"/drive.sh && echo 1 || echo 0)"
+a "plan.sh forwards --name"                   "$(grep -q '\-\-pool|--name' "$HERE"/plan.sh && echo 1 || echo 0)"
+a "task-list example uses a real status"      "$(grep -q 'status running' "$HERE"/SKILL.md && echo 0 || echo 1)"
 exit $fail
