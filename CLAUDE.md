@@ -1,6 +1,6 @@
 # Praca w tym repozytorium
 
-## Wersja — cztery miejsca, jednym ruchem
+## Wersja wtyczki `tms` — cztery miejsca, jednym ruchem
 
 Numer wersji siedzi w czterech miejscach. **Podbijasz wszystkie naraz, w jednym
 commicie:**
@@ -19,6 +19,29 @@ Zanim wypchniesz podbicie, sprawdź, że nic nie zostało:
 ```bash
 grep -rn "0\.31\.2" --include=*.md --include=*.json .
 ```
+
+## Wersja wtyczki `orchestration` — dwa miejsca
+
+Druga wtyczka ma własny numer, niezależny od `tms`. Podbijasz oba naraz:
+
+1. `plugins/orchestration/.claude-plugin/plugin.json`
+2. `.claude-plugin/marketplace.json` — wpis `orchestration`, nie `tms`
+
+Nie ma tu odpowiednika punktu 3 z `tms` — ta wtyczka nie melduje wersji człowiekowi.
+Sprawdzenie, czy nic nie zostało, jest za to identyczne.
+
+Zasada „numeru wydanego nie nadpisujesz" z sekcji niżej obowiązuje tak samo — cache
+jest kluczowany numerem osobno dla każdej wtyczki.
+
+## Skrypty wtyczki `orchestration` muszą zostać relokowalne
+
+`plan.sh`, `drive.sh` i `check.sh` żyją w cache'u wtyczki, którego ścieżka jest inna
+u każdego. Żaden z nich nie może hardkodować `~/.claude/skills/...` — znajdują się
+nawzajem przez `HERE="$(cd "$(dirname "$0")" && pwd)"`, a `SKILL.md` woła je przez
+`${CLAUDE_PLUGIN_ROOT}`.
+
+Wartownikiem jest `check.sh` odpalony z zainstalowanej wtyczki: sprawdza własne
+sąsiedztwo, więc hardkod ścieżki wywali się tam natychmiast.
 
 ## Numeru wydanego nie nadpisujesz
 

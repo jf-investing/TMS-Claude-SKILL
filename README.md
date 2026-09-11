@@ -1,5 +1,9 @@
 # Skill do Claude — zadania w TMS
 
+> **To repozytorium trzyma dwie wtyczki.** Ta strona opisuje `tms` — zadania w TMS.
+> Druga to `orchestration` (wielu agentów Orca pod nadzorem), opisana w
+> [plugins/orchestration/README.md](plugins/orchestration/README.md).
+
 ## Czym to jest
 
 Dodatek do Claude'a, który po skończonej robocie sam zakłada zadanie w TMS.
