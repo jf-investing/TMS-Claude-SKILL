@@ -80,3 +80,21 @@ Po odpowiedzi na pytanie wraca się przez samo `drive.sh`, bez zakładania przeb
 Domyślnie pętlę prowadzi skrypt. Jeśli chcesz patrzeć na bieżąco, powiedz to wprost —
 skill ma osobny tryb ręczny (reguły 2–5 w `SKILL.md`). Kosztuje więcej i po to jest
 domyślnie wyłączony.
+
+## Worktree wykrywa się sam
+
+Driver nie zakłada, jak twój workspace obsługuje worktree — próbuje `new-child`
+(izolacja, własna nazwa nadawana automatycznie), a gdy Orca odmówi, schodzi na
+`current` i mówi o tym jednym wierszem. Nikt nie podaje żadnej flagi.
+
+Gdy chcesz wymusić konkretny wariant: `--worktree current` albo
+`--worktree new-child --name moja-nazwa`.
+
+**Odmowa startu workera jest teraz głośna.** Do 1.0.0 `worker-start` leciał
+z wyciszonym stderr — odmowa oznaczała, że nie startowało nic, nie było o tym ani
+słowa, a pierwszy sygnał przychodził po dwóch pełnych `--timeout-ms` (domyślnie
+30 minut) i wskazywał pustą listę. Teraz treść odmowy idzie na ekran, a DAG kończy
+się od razu kodem **40**, z zadaniami nietkniętymi w `[ready]`.
+
+To jedyny kod wyjścia, który znaczy „nic się nie wydarzyło" — reszta z tabeli wyżej
+opisuje przebieg, który faktycznie ruszył.

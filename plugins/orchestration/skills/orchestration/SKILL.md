@@ -97,7 +97,7 @@ and arm B producing one more file. Cheaper reports did not mean worse work.
 ## Rule 4 — always filter
 
 ```text
-ORCA orchestration task-list --status running --brief          # 94 B
+ORCA orchestration task-list --status dispatched --brief      # 94 B
 ORCA orchestration check --wait --types worker_done,escalation,question --timeout-ms 900000
 ```
 
