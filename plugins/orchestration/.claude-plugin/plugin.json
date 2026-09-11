@@ -1,7 +1,7 @@
 {
   "name": "orchestration",
   "description": "Nadzorowana praca wielu agentów Orca — pętlę DAG-u prowadzi skrypt, nie kontekst modelu",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "author": {
     "name": "J&F Investing"
   },

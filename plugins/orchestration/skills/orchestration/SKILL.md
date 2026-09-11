@@ -58,9 +58,11 @@ turn re-reads the whole conversation: ~10.6M token-reads → ~80k, **~132×**. P
 discounts both sides equally, so the ratio stands.
 
 Supervise by hand only when the user asks to watch it live. Then use Rules 2-5.
-## Worker model: Opus 5 at `--effort low` (the default, on purpose)
+## Worker model: Opus 5 with the 1M context window, at `--effort low` (default)
 
-`drive.sh` launches workers on `--model opus --effort low` unless you say otherwise.
+`drive.sh` launches workers on `--model claude-opus-5[1m] --effort low` unless you say
+otherwise. The `[1m]` suffix is the million-token context variant — plain `opus` is the
+200k one and is NOT the same model id.
 This is a decision, not an inherited example — earlier versions put `--model sonnet` in
 every snippet without ever saying why, and a snippet nobody questions quietly becomes
 policy.
