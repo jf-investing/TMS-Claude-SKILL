@@ -28,6 +28,29 @@ while [ $# -gt 0 ]; do case $1 in
   --name) WTNAME=$2; shift 2;;
   *) shift;; esac; done
 MFLAG=""; [ -n "$MODEL" ] && MFLAG="--model $MODEL"; [ -n "$EFFORT" ] && MFLAG="$MFLAG --effort $EFFORT"
+HERE="$(cd "$(dirname "$0")" && pwd)"
+
+# STRAZNIK AKTUALIZACJI ORKI — sam sie odpala, nikt nie musi pamietac.
+#
+# check.sh jest tani (~kilka sekund, read-only, zero runow). Odpalamy go WYLACZNIE
+# wtedy, gdy wersja binarki rozni sie od ostatniej sprawdzonej, i wypisujemy tylko to,
+# co pekło. Zwykly przebieg nie placi za to nic.
+#
+# To nie jest zabezpieczenie przed awaria startu — ta jest dzis glosna sama z siebie
+# (WORKER START REFUSED, exit 40). To jest zabezpieczenie przed CICHYM rozjazdem:
+# gdyby Orca przestala np. oszczedzac na formacie tekstowym, DAG dalej by chodzil,
+# tyle ze liczby ze SKILL.md bylyby juz nieprawda i nikt by sie nie dowiedzial.
+STATE="$HOME/.claude/.orca-checked"
+VER=$($O --version 2>/dev/null | head -1)
+if [ -n "$VER" ] && [ "$VER" != "$(cat "$STATE" 2>/dev/null)" ]; then
+  broke=$(bash "$HERE/check.sh" 2>/dev/null | grep '^FAIL:')
+  if [ -n "$broke" ]; then
+    echo "ORCA $VER — reguly wtyczki rozjechaly sie z binarka:"
+    printf '%s\n' "$broke" | sed 's/^/  /'
+    echo "  DAG jedzie dalej. Zglos to, zanim ktos znow przytoczy liczby ze SKILL.md."
+  fi
+  printf '%s' "$VER" > "$STATE" 2>/dev/null || true
+fi
 WTSEL=""; badstart=0
 started=0; reused=0; released=0; retained=0; STALLS=0; FP=""; INFLIGHT=0
 DONE=$(mktemp); trap 'rm -f "$DONE"' EXIT

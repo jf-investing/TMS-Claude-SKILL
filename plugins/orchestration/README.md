@@ -47,7 +47,9 @@ wszystkie liczby z `SKILL.md` i konfrontuje je z twoją wersją binarki. Same `o
 że środowisko gra. Jakiekolwiek `FAIL:` znaczy, że Orca się zmieniła i reguły wymagają
 przeliczenia — zgłoś, nie obchodź.
 
-Warto odpalić ponownie po każdej aktualizacji Orki.
+Po aktualizacji Orki **nie musisz robić nic** — driver sam pamięta, przeciw której
+wersji binarki ostatnio się sprawdzał, i przy zmianie odpala ten test w tle, meldując
+wyłącznie to, co pękło. Kosztuje ~6 s raz na wersję Orki.
 
 ## Jak tego używać
 
