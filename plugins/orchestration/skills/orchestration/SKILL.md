@@ -118,10 +118,18 @@ ORCA skills get orchestration > "$TMPDIR/orca-guide.md"
 awk 'BEGIN{s=1} /^## /{s = !/Contract Migration|Gates And Legacy|Full Handoffs|Worker Terminals/} s' "$TMPDIR/orca-guide.md"
 ```
 
-## Verify after an Orca update
+## Orca updates verify themselves
 
-`bash ${CLAUDE_PLUGIN_ROOT}/skills/orchestration/check.sh` — asserts every ratio above against the
-live binary and fails loudly if the grammar moved.
+`drive.sh` remembers the `orca --version` it last validated against. When the binary
+changes, the next run silently re-runs `check.sh` and prints **only what broke** — no
+flag, no ritual, ~6 s once per Orca version, 0.2 s after that.
+
+This guards the *quiet* drift: if Orca stopped saving bytes on text output, the DAG would
+keep working while every number in this file turned into a lie. Loud breakage needs no
+guard — a refused `worker-start` prints its own reason and exits 40 on the spot.
+
+Run `bash ${CLAUDE_PLUGIN_ROOT}/skills/orchestration/check.sh` by hand only when you want
+the full green list.
 
 ## Known: what the spec cannot reach
 
