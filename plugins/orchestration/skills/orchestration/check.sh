@@ -69,4 +69,6 @@ a "plan.sh forwards --name"                   "$(grep -q '\-\-pool|--name' "$HER
 a "task-list example uses a real status"      "$(grep -q 'status running' "$HERE"/SKILL.md && echo 0 || echo 1)"
 a "driver self-checks on an Orca version change" "$(grep -q 'orca-checked' "$HERE"/drive.sh && echo 1 || echo 0)"
 a "the guard warns but never blocks the DAG"     "$(grep -q 'DAG jedzie dalej' "$HERE"/drive.sh && echo 1 || echo 0)"
+a "workers default to opus at low effort"     "$(grep -q 'MODEL="opus"; EFFORT="low"' "$HERE"/drive.sh && echo 1 || echo 0)"
+a "no stale --model sonnet left in examples"  "$(grep -q -- '--model sonnet$' "$HERE"/SKILL.md && echo 0 || echo 1)"
 exit $fail

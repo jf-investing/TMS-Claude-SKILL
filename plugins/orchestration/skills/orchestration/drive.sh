@@ -21,7 +21,7 @@
 # Exit 40 = no worker could be started at all; the reason is printed verbatim.
 set -u
 O="${ORCA_CLI_COMMAND:-orca}"
-AGENT=claude; WT=auto; WTNAME=""; TMO=900000; MODEL=""; EFFORT=""; POOL=0
+AGENT=claude; WT=auto; WTNAME=""; TMO=900000; MODEL="opus"; EFFORT="low"; POOL=0
 while [ $# -gt 0 ]; do case $1 in
   --agent) AGENT=$2; shift 2;; --worktree) WT=$2; shift 2;; --timeout-ms) TMO=$2; shift 2;;
   --model) MODEL=$2; shift 2;; --effort) EFFORT=$2; shift 2;; --pool) POOL=$2; shift 2;;

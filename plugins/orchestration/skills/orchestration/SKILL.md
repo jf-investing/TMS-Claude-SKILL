@@ -37,7 +37,7 @@ Set up and run the whole graph in one call — specs on stdin, one per line. The
 per task:
 
 ```text
-bash ${CLAUDE_PLUGIN_ROOT}/skills/orchestration/plan.sh --objective "<goal>" --model sonnet <<'SPECS'
+bash ${CLAUDE_PLUGIN_ROOT}/skills/orchestration/plan.sh --objective "<goal>" <<'SPECS'
 first task spec
 second task spec
 SPECS
@@ -58,6 +58,25 @@ turn re-reads the whole conversation: ~10.6M token-reads → ~80k, **~132×**. P
 discounts both sides equally, so the ratio stands.
 
 Supervise by hand only when the user asks to watch it live. Then use Rules 2-5.
+## Worker model: Opus 5 at `--effort low` (the default, on purpose)
+
+`drive.sh` launches workers on `--model opus --effort low` unless you say otherwise.
+This is a decision, not an inherited example — earlier versions put `--model sonnet` in
+every snippet without ever saying why, and a snippet nobody questions quietly becomes
+policy.
+
+The reasoning: a worker's cost is dominated by turns, not by the per-token rate. A
+cheaper model that misreads a spec pays the difference back immediately in rework turns,
+and a turn is the most expensive unit in the system. `--effort low` keeps Opus from
+spending reasoning budget on tasks whose specs already say exactly what to do.
+
+Override per run when the work genuinely warrants it:
+
+```text
+--model sonnet              # bulk mechanical edits, spec leaves nothing to interpret
+--effort medium|high        # the task needs real deliberation
+```
+
 ## Rule 2 — nothing needs `--json`. Measured on a live run:
 
 | command | text | `--json` | waste |
@@ -156,7 +175,7 @@ the wall time of a small task. In the driver at `--pool 2` over 4 tasks: 82 s �
 `started=2 reused=2`, 4/4 self-checks passing.
 
 ```text
-bash ${CLAUDE_PLUGIN_ROOT}/skills/orchestration/plan.sh --objective "<goal>" --model sonnet --pool 4 <<'SPECS'
+bash ${CLAUDE_PLUGIN_ROOT}/skills/orchestration/plan.sh --objective "<goal>" --pool 4 <<'SPECS'
 ...
 SPECS
 ```
@@ -188,7 +207,7 @@ When N tasks differ by one word (five page sections, ten endpoints, one module p
 write the spec once and feed the varying part on stdin. Every `{}` is replaced:
 
 ```text
-bash ${CLAUDE_PLUGIN_ROOT}/skills/orchestration/plan.sh --objective "<goal>" --model sonnet --pool 4 \
+bash ${CLAUDE_PLUGIN_ROOT}/skills/orchestration/plan.sh --objective "<goal>" --pool 4 \
   --template 'W katalogu src stworz {}.js: funkcja {}(x) z assert self-check, uruchom.' <<'ITEMS'
 inc
 dec
