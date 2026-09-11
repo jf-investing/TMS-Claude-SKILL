@@ -1,0 +1,15 @@
+{
+  "name": "orchestration",
+  "description": "Nadzorowana praca wielu agentów Orca — pętlę DAG-u prowadzi skrypt, nie kontekst modelu",
+  "version": "1.0.0",
+  "author": {
+    "name": "J&F Investing"
+  },
+  "repository": "https://github.com/jf-investing/TMS-Claude-SKILL",
+  "keywords": [
+    "orca",
+    "orkiestracja",
+    "agenci",
+    "dag"
+  ]
+}

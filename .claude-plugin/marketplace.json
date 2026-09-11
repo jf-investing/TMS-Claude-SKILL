@@ -10,6 +10,12 @@
       "description": "Zadania w firmowym TMS prosto z rozmowy z Claude'em — zakładanie, podzadania, materiały, statusy",
       "version": "0.40.1",
       "source": "./"
+    },
+    {
+      "name": "orchestration",
+      "description": "Nadzorowana praca wielu agentów Orca — pętlę DAG-u prowadzi skrypt, nie kontekst modelu",
+      "version": "1.0.0",
+      "source": "./plugins/orchestration"
     }
   ]
 }
